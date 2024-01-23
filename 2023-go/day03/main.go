@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	file, err := os.Open("test.txt")
+	file, err := os.Open("day03.txt")
 	if err != nil {
 		panic(err)
 	}
@@ -29,15 +29,16 @@ func main() {
 	}
 	cols = len(matrix[0])
 
-	fmt.Println(matrix, rows, cols)
-
 	if err := scanner.Err(); err != nil {
 		panic(err)
 	}
 
+	// print(matrix)
+
 	fmt.Println("First Part: ", FirstPart(matrix, rows, cols))
-	fmt.Printf("%v", matrix)
 	// fmt.Println("Second Part: ", SecondPart(games))
+
+	// print(matrix)
 
 }
 
@@ -49,6 +50,7 @@ func FirstPart(matrix [][]rune, rows, cols int) int {
 	for i := 0; i < rows; i++ {
 		for j := 0; j < cols; j++ {
 			if strings.ContainsRune(symbols, matrix[i][j]) {
+				matrix[i][j] = '.'
 				total += LookAndSumParts(matrix, i, j)
 			}
 		}
@@ -90,18 +92,18 @@ func ExtractAndErase(matrix [][]rune, row, col int) int {
 	matrix[row][col] = '.'
 
 	// go left
-	currentPosition := row - 1
-	for currentPosition >= 0 {
-		extractedDigits = string(matrix[currentPosition][col]) + extractedDigits
-		matrix[currentPosition][col] = '.'
+	currentPosition := col - 1
+	for currentPosition >= 0 && unicode.IsDigit(matrix[row][currentPosition]) {
+		extractedDigits = string(matrix[row][currentPosition]) + extractedDigits
+		matrix[row][currentPosition] = '.'
 		currentPosition--
 	}
 
 	// go right
-	currentPosition = row + 1
-	for currentPosition < len(matrix[0]) {
-		extractedDigits = extractedDigits + string(matrix[currentPosition][col])
-		matrix[currentPosition][col] = '.'
+	currentPosition = col + 1
+	for currentPosition < len(matrix[0]) && unicode.IsDigit(matrix[row][currentPosition]) {
+		extractedDigits = extractedDigits + string(matrix[row][currentPosition])
+		matrix[row][currentPosition] = '.'
 		currentPosition++
 	}
 
@@ -111,4 +113,10 @@ func ExtractAndErase(matrix [][]rune, row, col int) int {
 
 func validCoords(matrix [][]rune, row, col int) bool {
 	return row >= 0 && col >= 0 && row < len(matrix) && col < len(matrix[0])
+}
+
+func print(matrix [][]rune) {
+	for _, row := range matrix {
+		fmt.Println(string(row))
+	}
 }
