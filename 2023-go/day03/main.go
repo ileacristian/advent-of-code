@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	file, err := os.Open("test.txt")
+	file, err := os.Open("day03.txt")
 	if err != nil {
 		panic(err)
 	}
@@ -33,14 +33,10 @@ func main() {
 		panic(err)
 	}
 
-	print(matrix)
-	copiedMatrix := make([][]rune, len(matrix))
-	copy(copiedMatrix, matrix)
-	// fmt.Println("First Part: ", FirstPart(matrix, rows, cols))
+	copiedMatrix := duplicateMatrix(matrix)
+
+	fmt.Println("First Part: ", FirstPart(matrix, rows, cols))
 	fmt.Println("Second Part: ", SecondPart(copiedMatrix, rows, cols))
-
-	// print(matrix)
-
 }
 
 func FirstPart(matrix [][]rune, rows, cols int) int {
@@ -64,7 +60,7 @@ func SecondPart(matrix [][]rune, rows, cols int) int {
 	total := 0
 	for i := 0; i < rows; i++ {
 		for j := 0; j < cols; j++ {
-			if matrix[i][j] == '*' && hasOnlyTwoNeighbors(matrix, i, j) {
+			if matrix[i][j] == '*' {
 				matrix[i][j] = '.'
 				total += lookAndMulParts(matrix, i, j)
 			}
@@ -86,26 +82,21 @@ func around(row, col int) [][]int {
 	}
 }
 
-func hasOnlyTwoNeighbors(matrix [][]rune, row, col int) bool {
-	neighbors := 0
+func lookAndMulParts(matrix [][]rune, row, col int) int {
+	parts := []int{}
+
 	for _, pair := range around(row, col) {
-		if unicode.IsDigit(matrix[pair[0]][pair[1]]) {
-			neighbors++
-			fmt.Println(row, col, neighbors)
+		part := Check(matrix, pair[0], pair[1])
+		if part != 0 {
+			parts = append(parts, part)
 		}
 	}
 
-	return neighbors == 2
-}
-
-func lookAndMulParts(matrix [][]rune, row, col int) int {
-	partsProd := 1
-
-	for _, pair := range around(row, col) {
-		partsProd *= Check(matrix, pair[0], pair[1])
+	if len(parts) == 2 { // only two neighbors
+		return parts[0] * parts[1]
+	} else {
+		return 0
 	}
-
-	return partsProd
 }
 
 func LookAndSumParts(matrix [][]rune, row, col int) int {
@@ -163,4 +154,16 @@ func print(matrix [][]rune) {
 	for _, row := range matrix {
 		fmt.Println(string(row))
 	}
+}
+
+func duplicateMatrix(original [][]rune) [][]rune {
+	duplicated := make([][]rune, len(original))
+
+	for i, row := range original {
+		duplicatedRow := make([]rune, len(row))
+		copy(duplicatedRow, row)
+		duplicated[i] = duplicatedRow
+	}
+
+	return duplicated
 }
