@@ -9,19 +9,19 @@ func NewRange(start, end int) Range {
 	return Range{Start: start, Length: end - start + 1}
 }
 
-func (r *Range) End() int {
+func (r Range) End() int {
 	return r.Start + r.Length - 1
 }
 
-func (r *Range) Overlaps(other Range) bool {
+func (r Range) Overlaps(other Range) bool {
 	var a, b Range
 
 	if r.Start < other.Start {
-		a = *r
+		a = r
 		b = other
 	} else {
 		a = other
-		b = *r
+		b = r
 	}
 
 	return b.Start <= a.End()

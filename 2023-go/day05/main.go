@@ -127,7 +127,7 @@ func FillMap(line string, mapping *Mapping) {
 	sourceStart, _ := strconv.Atoi(parts[1])
 	length, _ := strconv.Atoi(parts[2])
 
-	mappingInstr := MappingInstruction{destStart: destStart, sourceStart: sourceStart, length: length}
+	mappingInstr := MappingInstruction{DestStart: destStart, SourceStart: sourceStart, Length: length}
 	mapping.AddInstruction(mappingInstr)
 }
 
@@ -180,8 +180,8 @@ func UnmappedRanges(sourceRange Range, overlaps []Range) []Range {
 		startPivot = sourceRange.Start
 	} else {
 		for i, overlap := range overlaps {
-			if overlap.Start+overlap.Length-1 >= sourceRange.Start {
-				startPivot = overlap.Start + overlap.Length
+			if overlap.End() >= sourceRange.Start {
+				startPivot = overlap.End() + 1
 				currentOverlapIdx = i + 1
 				break
 			}
@@ -193,17 +193,16 @@ func UnmappedRanges(sourceRange Range, overlaps []Range) []Range {
 			currentOverlapIdx++
 			continue
 		} else {
-			if overlaps[currentOverlapIdx].Start >= sourceRange.Start+sourceRange.Length {
+			if overlaps[currentOverlapIdx].Start >= sourceRange.End()+1 {
 				ranges = append(ranges, sourceRange)
-				startPivot = sourceRange.Start + sourceRange.Length
+				startPivot = sourceRange.End() + 1
 				break
 			} else {
-				ranges = append(ranges, Range{Start: startPivot, Length: overlaps[currentOverlapIdx].Start - startPivot})
-
+				ranges = append(ranges, NewRange(startPivot, overlaps[currentOverlapIdx].Start-1))
 			}
-			pivotCandidate := overlaps[currentOverlapIdx].Start + overlaps[currentOverlapIdx].Length
-			if pivotCandidate > sourceRange.Start+sourceRange.Length {
-				startPivot = sourceRange.Start + sourceRange.Length
+			pivotCandidate := overlaps[currentOverlapIdx].End() + 1
+			if pivotCandidate > sourceRange.End() {
+				startPivot = sourceRange.End() + 1
 				break
 			}
 			startPivot = pivotCandidate
@@ -211,23 +210,31 @@ func UnmappedRanges(sourceRange Range, overlaps []Range) []Range {
 		}
 	}
 
-	if startPivot < sourceRange.Start+sourceRange.Length {
-		ranges = append(ranges, Range{Start: startPivot, Length: sourceRange.Start + sourceRange.Length - startPivot})
+	if startPivot < sourceRange.End() {
+		ranges = append(ranges, NewRange(startPivot, sourceRange.End()))
 	}
 
 	return ranges
 }
 
 type MappingInstruction struct {
-	destStart   int
-	sourceStart int
-	length      int
+	DestStart   int
+	SourceStart int
+	Length      int
+}
+
+func (m *MappingInstruction) Dest() Range {
+	return Range{Start: m.DestStart, Length: m.Length}
+}
+
+func (m *MappingInstruction) Source() Range {
+	return Range{Start: m.SourceStart, Length: m.Length}
 }
 
 func (m MappingInstruction) mapping(source int) (destination int, found bool) {
-	if source >= m.sourceStart && source <= m.sourceStart+m.length-1 {
-		offset := source - m.sourceStart
-		destination = m.destStart + offset
+	if source >= m.SourceStart && source <= m.Source().End() {
+		offset := source - m.SourceStart
+		destination = m.DestStart + offset
 		found = true
 	} else {
 		destination = -1
@@ -237,23 +244,18 @@ func (m MappingInstruction) mapping(source int) (destination int, found bool) {
 }
 
 func (m MappingInstruction) mappingRange(sourceRange Range) (destination Range, overlap Range, foundOverlap bool) {
-	end1 := sourceRange.Start + sourceRange.Length - 1
-	end2 := m.sourceStart + m.length - 1
-	overlapStart := max(sourceRange.Start, m.sourceStart)
-	overlapEnd := min(end1, end2)
+	overlapStart := max(sourceRange.Start, m.SourceStart)
+	overlapEnd := min(sourceRange.End(), m.Source().End())
 
 	if overlapStart <= overlapEnd {
 		overlapLength := overlapEnd - overlapStart + 1
-		destinationOffset := overlapStart - m.sourceStart
+		destinationOffset := overlapStart - m.SourceStart
 		destination = Range{
-			Start:  m.destStart + destinationOffset,
+			Start:  m.DestStart + destinationOffset,
 			Length: overlapLength,
 		}
 
-		overlap = Range{
-			Start:  overlapStart,
-			Length: overlapLength,
-		}
+		overlap = NewRange(overlapStart, overlapEnd)
 		foundOverlap = true
 	}
 	return

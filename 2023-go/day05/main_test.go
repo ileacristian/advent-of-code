@@ -7,7 +7,7 @@ import (
 
 func TestMappingRange(t *testing.T) {
 	t.Run("Testing mappingRange with input from test file", func(t *testing.T) {
-		m := MappingInstruction{destStart: 98, sourceStart: 50, length: 2}
+		m := MappingInstruction{DestStart: 98, SourceStart: 50, Length: 2}
 		s := Range{Start: 50, Length: 2}
 		gotDest, gotOverlap, gotFound := m.mappingRange(s)
 		wantDest, wantOverlap, wantFound := Range{Start: 98, Length: 2}, Range{Start: 50, Length: 2}, true
@@ -17,7 +17,7 @@ func TestMappingRange(t *testing.T) {
 		}
 	})
 	t.Run("Testing mappingRange with no overlap", func(t *testing.T) {
-		m := MappingInstruction{destStart: 98, sourceStart: 50, length: 2}
+		m := MappingInstruction{DestStart: 98, SourceStart: 50, Length: 2}
 		s := Range{Start: 52, Length: 2}
 		gotDest, gotOverlap, gotFound := m.mappingRange(s)
 		wantDest, wantOverlap, wantFound := Range{Start: 0, Length: 0}, Range{Start: 0, Length: 0}, false
@@ -28,7 +28,7 @@ func TestMappingRange(t *testing.T) {
 	})
 
 	t.Run("Testing mappingRange with some overlap", func(t *testing.T) {
-		m := MappingInstruction{destStart: 500, sourceStart: 1, length: 100}
+		m := MappingInstruction{DestStart: 500, SourceStart: 1, Length: 100}
 		s := Range{Start: 50, Length: 100}
 		gotDest, gotOverlap, gotFound := m.mappingRange(s)
 		wantDest, wantOverlap, wantFound := Range{Start: 549, Length: 51}, Range{Start: 50, Length: 51}, true
@@ -39,7 +39,7 @@ func TestMappingRange(t *testing.T) {
 	})
 
 	t.Run("Testing mappingRange with full overlap inside", func(t *testing.T) {
-		m := MappingInstruction{destStart: 111, sourceStart: 1, length: 100}
+		m := MappingInstruction{DestStart: 111, SourceStart: 1, Length: 100}
 		s := Range{Start: 50, Length: 2}
 		gotDest, gotOverlap, gotFound := m.mappingRange(s)
 		wantDest, wantOverlap, wantFound := Range{Start: 160, Length: 2}, Range{Start: 50, Length: 2}, true
@@ -53,7 +53,7 @@ func TestMappingRange(t *testing.T) {
 func TestGetMappingRanges(t *testing.T) {
 	t.Run("Testing Mapping with one MappingInstruction and full overlapping input Range", func(t *testing.T) {
 		m := Mapping{}
-		m.AddInstruction(MappingInstruction{destStart: 98, sourceStart: 50, length: 2})
+		m.AddInstruction(MappingInstruction{DestStart: 98, SourceStart: 50, Length: 2})
 		s := Range{Start: 50, Length: 2}
 
 		got := m.GetMappingRanges(s)
@@ -66,7 +66,7 @@ func TestGetMappingRanges(t *testing.T) {
 
 	t.Run("Testing Mapping with one MappingInstruction and overlapping input Range", func(t *testing.T) {
 		m := Mapping{}
-		m.AddInstruction(MappingInstruction{destStart: 98, sourceStart: 50, length: 2})
+		m.AddInstruction(MappingInstruction{DestStart: 98, SourceStart: 50, Length: 2})
 		s := Range{Start: 50, Length: 5}
 
 		got := m.GetMappingRanges(s)
@@ -79,8 +79,8 @@ func TestGetMappingRanges(t *testing.T) {
 
 	t.Run("Testing Mapping with multiple MappingInstruction and overlapping input Range", func(t *testing.T) {
 		m := Mapping{}
-		m.AddInstruction(MappingInstruction{destStart: 98, sourceStart: 50, length: 2})
-		m.AddInstruction(MappingInstruction{destStart: 50, sourceStart: 52, length: 48})
+		m.AddInstruction(MappingInstruction{DestStart: 98, SourceStart: 50, Length: 2})
+		m.AddInstruction(MappingInstruction{DestStart: 50, SourceStart: 52, Length: 48})
 
 		s := Range{Start: 79, Length: 14}
 
@@ -94,9 +94,9 @@ func TestGetMappingRanges(t *testing.T) {
 
 	t.Run("Testing Mapping with multiple MappingInstruction and overlapping input Range", func(t *testing.T) {
 		m := Mapping{}
-		m.AddInstruction(MappingInstruction{destStart: 15, sourceStart: 0, length: 37})
-		m.AddInstruction(MappingInstruction{destStart: 52, sourceStart: 37, length: 2})
-		m.AddInstruction(MappingInstruction{destStart: 0, sourceStart: 39, length: 15})
+		m.AddInstruction(MappingInstruction{DestStart: 15, SourceStart: 0, Length: 37})
+		m.AddInstruction(MappingInstruction{DestStart: 52, SourceStart: 37, Length: 2})
+		m.AddInstruction(MappingInstruction{DestStart: 0, SourceStart: 39, Length: 15})
 
 		s := Range{Start: 77, Length: 14}
 
@@ -110,9 +110,9 @@ func TestGetMappingRanges(t *testing.T) {
 
 	t.Run("Testing Mapping with multiple MappingInstruction and overlapping input Range", func(t *testing.T) {
 		m := Mapping{}
-		m.AddInstruction(MappingInstruction{destStart: 15, sourceStart: 0, length: 37})
-		m.AddInstruction(MappingInstruction{destStart: 52, sourceStart: 37, length: 2})
-		m.AddInstruction(MappingInstruction{destStart: 0, sourceStart: 39, length: 39})
+		m.AddInstruction(MappingInstruction{DestStart: 15, SourceStart: 0, Length: 37})
+		m.AddInstruction(MappingInstruction{DestStart: 52, SourceStart: 37, Length: 2})
+		m.AddInstruction(MappingInstruction{DestStart: 0, SourceStart: 39, Length: 39})
 
 		s := Range{Start: 77, Length: 14}
 
