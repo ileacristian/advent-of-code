@@ -52,7 +52,7 @@ func main() {
 	}
 
 	fmt.Println("First Part: ", FirstPart(races))
-	// fmt.Println("Second Part: ", SecondPart(seeds, mapsOrdered))
+	fmt.Println("Second Part: ", SecondPart(races))
 }
 
 func FirstPart(races []Race) int {
@@ -61,6 +61,23 @@ func FirstPart(races []Race) int {
 		possibilities *= race.WaysOfWinning()
 	}
 	return possibilities
+}
+
+// we'll merge all the races into one
+func SecondPart(races []Race) int {
+	raceTimeStr := ""
+	raceRecordStr := ""
+	for _, race := range races {
+		raceTimeStr += fmt.Sprint(race.Time)
+		raceRecordStr += fmt.Sprint(race.RecordDistance)
+	}
+
+	raceRecord, _ := strconv.Atoi(raceRecordStr)
+	raceTime, _ := strconv.Atoi(raceTimeStr)
+
+	theRace := Race{RecordDistance: raceRecord, Time: raceTime}
+
+	return theRace.WaysOfWinning()
 }
 
 func (r Race) WaysOfWinning() int {
