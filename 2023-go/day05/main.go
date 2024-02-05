@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	file, err := os.Open("day05.txt")
+	file, err := os.Open("test.txt")
 	if err != nil {
 		panic(err)
 	}
@@ -113,10 +113,15 @@ func SecondPart(seeds []int, maps []*Mapping) int {
 		for _, source := range destinations {
 			newDestinations = append(newDestinations, (*mapping).GetMappingRanges(source)...)
 		}
+		fmt.Printf("Overlaps: %t\n", RangeSlice(newDestinations).AnyMergeable())
+		fmt.Printf("----------------\n")
+
 		destinations = newDestinations
 	}
 
+	fmt.Printf("----------------\n")
 	sort.Sort(ByStart(destinations))
+	fmt.Printf("Overlaps: %t\n", RangeSlice(destinations).AnyMergeable())
 
 	return destinations[0].Start
 }
