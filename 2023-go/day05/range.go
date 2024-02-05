@@ -93,11 +93,8 @@ func (r RangeSlice) MergeMergeable() RangeSlice {
 
 		if r[i].Mergeable(r[i+1]) {
 			merge := r[i].Merge(r[i+1])
-			fmt.Printf("Merging %v + %v = %v ; from r:%v\n", r[i], r[i+1], merge, r)
-
 			r[i] = merge
 			r = append(r[:i+1], r[i+2:]...)
-			fmt.Printf("After merge:%v\n", r)
 		} else {
 			i++
 		}
