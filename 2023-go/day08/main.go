@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"strings"
+	"sync"
 )
 
 type Tree struct {
@@ -79,12 +81,11 @@ func main() {
 		panic(err)
 	}
 
-	tree := AddNodesToTree(nodes)
-
-	// PrettyPrint(tree, "")
-
+	tree := TreeFromNodeWithKey(nodes, "AAA")
 	fmt.Println("First Part: ", FirstPart(directions, tree))
-	// fmt.Println("Second Part: ", SecondPart(hands))
+
+	trees := TreesWithASuffix(nodes)
+	fmt.Println("Second Part: ", SecondPart(directions, trees))
 }
 
 func ParseDirectionsLine(line string) []Direction {
@@ -116,22 +117,20 @@ func ParseNodeLine(line string) RawNode {
 	return RawNode{Key: matches[1], Left: matches[2], Right: matches[3]}
 }
 
-func AddNodesToTree(nodes []RawNode) *Tree {
+func TreeFromNodeWithKey(nodes []RawNode, key string) *Tree {
 	nodeMapping := make(map[string]RawNode, len(nodes))
 	for _, node := range nodes {
 		nodeMapping[node.Key] = node
 	}
 
-	AAANode := nodeMapping["AAA"]
-	tree := GetTree(AAANode, nodeMapping)
+	startNode := nodeMapping[key]
+	tree := GetTree(startNode, nodeMapping)
 	return tree
 }
 
 func GetTree(node RawNode, nodeMapping map[string]RawNode) *Tree {
 	left := nodeMapping[node.Left]
 	right := nodeMapping[node.Right]
-
-	// fmt.Printf("At Node: %s with left: %s and right: %s\n", node.Key, node.Left, node.Right)
 
 	if node.Tree != nil {
 		return node.Tree
@@ -179,4 +178,67 @@ func FirstPart(directions []Direction, tree *Tree) int {
 	}
 
 	return distance
+}
+
+func TreesWithASuffix(nodes []RawNode) []*Tree {
+	trees := []*Tree{}
+	for _, node := range nodes {
+		if strings.HasSuffix(node.Key, "A") {
+			trees = append(trees, TreeFromNodeWithKey(nodes, node.Key))
+		}
+	}
+	return trees
+}
+
+func SecondPart(directions []Direction, trees []*Tree) int {
+	partialResults := make([]int, len(trees))
+	var wg sync.WaitGroup
+
+	for i, tree := range trees {
+		wg.Add(1)
+		go DistanceToZ(directions, tree, &partialResults[i], &wg)
+	}
+
+	wg.Wait()
+
+	result := lcm(partialResults[0], partialResults[1])
+
+	for i := 2; i < len(partialResults); i++ {
+		result = lcm(result, partialResults[i])
+	}
+
+	return result
+}
+
+func DistanceToZ(directions []Direction, tree *Tree, result *int, wg *sync.WaitGroup) {
+	distance := 0
+
+	currentDirection := 0
+	for !strings.HasSuffix(tree.Key, "Z") {
+		if directions[currentDirection] == Left {
+			tree = tree.Left
+		} else {
+			tree = tree.Right
+		}
+
+		if tree == nil {
+			panic("Should not get here")
+		}
+
+		currentDirection = (currentDirection + 1) % len(directions)
+		distance++
+	}
+	*result = distance
+	wg.Done()
+}
+
+func gcd(a, b int) int {
+	for b != 0 {
+		a, b = b, a%b
+	}
+	return a
+}
+
+func lcm(a, b int) int {
+	return a * b / gcd(a, b)
 }
