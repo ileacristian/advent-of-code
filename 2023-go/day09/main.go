@@ -29,7 +29,7 @@ func main() {
 	}
 
 	fmt.Println("First Part: ", FirstPart(readings))
-	// fmt.Println("Second Part: ", SecondPart(directions, trees))
+	fmt.Println("Second Part: ", SecondPart(readings))
 }
 
 func ParseLine(line string) []int {
@@ -47,6 +47,14 @@ func FirstPart(readings [][]int) int {
 	result := 0
 	for _, reading := range readings {
 		result += nextElement(reading)
+	}
+	return result
+}
+
+func SecondPart(readings [][]int) int {
+	result := 0
+	for _, reading := range readings {
+		result += prevElement(reading)
 	}
 	return result
 }
@@ -79,7 +87,7 @@ func prevElement(slice []int) int {
 	list := make([]int, len(slice))
 	copy(list, slice)
 
-	result := list[0]
+	results := []int{list[0]}
 
 	notThereYet := true
 	for notThereYet {
@@ -92,8 +100,13 @@ func prevElement(slice []int) int {
 			}
 		}
 
-		result -= newList[0]
+		results = append(results, newList[0])
 		list = newList
+	}
+
+	result := 0
+	for i := len(results) - 2; i >= 0; i-- {
+		result = results[i] - result
 	}
 
 	return result
