@@ -58,16 +58,13 @@ func main() {
 	// PrettyPrint(ParseInput(test4))
 	// fmt.Println("")
 	// PrettyPrint(ParseInput(test5))
-	pipes := ParseInput(test2)
+	pipes := ParseInput(day10)
 
-	PrettyPrint(pipes)
+	// PrettyPrint(pipes)
 
 	fmt.Println()
 
 	fmt.Println(FillAndGetMaxDistance(pipes))
-
-	PrettyPrint(pipes)
-
 }
 
 func ParseInput(surfaceMapString string) [][]Tile {
@@ -143,21 +140,29 @@ func PrettyPrint(tiles [][]Tile) {
 func FillAndGetMaxDistance(tiles [][]Tile) int {
 	var start = FindStart(tiles)
 
+	distances := make([][]Tile, len(tiles))
+	for i := range tiles {
+		distances[i] = make([]Tile, len(tiles[i]))
+	}
+
 	fmt.Println(start)
 
 	var queue Queue[Pair[int]]
 	var currentLocation = start
-	var currentDistance = 0
+	distances[currentLocation.a][currentLocation.b] = 0
 	queue.push(currentLocation)
 
 	for !queue.empty() {
 		currentLocation = queue.pop()
 		newDirections := ValidDirectionsFrom(currentLocation, tiles)
-		FillNewDirections(int(tiles[currentLocation.x][currentLocation.y]+1), tiles, newDirections)
+		FillNewDirections(int(distances[currentLocation.a][currentLocation.b]+1), distances, newDirections)
+		tiles[currentLocation.a][currentLocation.b] = Ground
 		queue.push(newDirections...)
 	}
 
-	return currentDistance - 1
+	// PrettyPrint(distances)
+
+	return int(distances[currentLocation.a][currentLocation.b])
 }
 
 func FindStart(tiles [][]Tile) (start Pair[int]) {
@@ -173,83 +178,85 @@ func FindStart(tiles [][]Tile) (start Pair[int]) {
 
 func FillNewDirections(value int, tiles [][]Tile, newDirections []Pair[int]) {
 	for _, newDir := range newDirections {
-		tiles[newDir.x][newDir.y] = Tile(value)
+		tiles[newDir.a][newDir.b] = Tile(value)
 	}
 }
 
 func ValidDirectionsFrom(loc Pair[int], tiles [][]Tile) []Pair[int] {
+	line := loc.a
+	col := loc.b
 	output := []Pair[int]{}
-	currTile := tiles[loc.x][loc.y]
+	currTile := tiles[line][col]
 	var left, right, up, down Tile = Ground, Ground, Ground, Ground
 
-	if loc.x-1 >= 0 {
-		left = tiles[loc.x-1][loc.y]
+	if col-1 >= 0 {
+		left = tiles[line][col-1]
 	}
-	if loc.x+1 < len(tiles) {
-		right = tiles[loc.x+1][loc.y]
+	if col+1 < len(tiles[0]) {
+		right = tiles[line][col+1]
 	}
-	if loc.y-1 >= 0 {
-		up = tiles[loc.x][loc.y-1]
+	if line-1 >= 0 {
+		up = tiles[line-1][col]
 	}
-	if loc.y+1 < len(tiles[0]) {
-		down = tiles[loc.x][loc.y+1]
+	if line+1 < len(tiles) {
+		down = tiles[line+1][col]
 	}
 
 	switch currTile {
 	case Start:
 		if up == VerticalPipe || up == TopLeftPipe || up == TopRightPipe {
-			output = append(output, Pair[int]{loc.x, loc.y - 1})
+			output = append(output, Pair[int]{line - 1, col})
 		}
 		if down == VerticalPipe || down == BottomLeftPipe || down == BottomRightPipe {
-			output = append(output, Pair[int]{loc.x, loc.y + 1})
+			output = append(output, Pair[int]{line + 1, col})
 		}
 		if left == HorizontalPipe || left == BottomLeftPipe || left == TopLeftPipe {
-			output = append(output, Pair[int]{loc.x - 1, loc.y})
+			output = append(output, Pair[int]{line, col - 1})
 		}
 		if right == HorizontalPipe || right == BottomRightPipe || right == TopRightPipe {
-			output = append(output, Pair[int]{loc.x + 1, loc.y})
+			output = append(output, Pair[int]{line, col + 1})
 		}
 	case VerticalPipe:
 		if up == VerticalPipe || up == TopLeftPipe || up == TopRightPipe {
-			output = append(output, Pair[int]{loc.x, loc.y - 1})
+			output = append(output, Pair[int]{line - 1, col})
 		}
 		if down == VerticalPipe || down == BottomLeftPipe || down == BottomRightPipe {
-			output = append(output, Pair[int]{loc.x, loc.y + 1})
+			output = append(output, Pair[int]{line + 1, col})
 		}
 	case HorizontalPipe:
 		if left == HorizontalPipe || left == BottomLeftPipe || left == TopLeftPipe {
-			output = append(output, Pair[int]{loc.x - 1, loc.y})
+			output = append(output, Pair[int]{line, col - 1})
 		}
 		if right == HorizontalPipe || right == BottomRightPipe || right == TopRightPipe {
-			output = append(output, Pair[int]{loc.x + 1, loc.y})
+			output = append(output, Pair[int]{line, col + 1})
 		}
 	case TopLeftPipe:
 		if down == VerticalPipe || down == BottomRightPipe || down == BottomLeftPipe {
-			output = append(output, Pair[int]{loc.x, loc.y + 1})
+			output = append(output, Pair[int]{line + 1, col})
 		}
 		if right == HorizontalPipe || right == BottomRightPipe || right == TopRightPipe {
-			output = append(output, Pair[int]{loc.x + 1, loc.y})
+			output = append(output, Pair[int]{line, col + 1})
 		}
 	case TopRightPipe:
 		if left == HorizontalPipe || left == BottomLeftPipe || left == TopLeftPipe {
-			output = append(output, Pair[int]{loc.x - 1, loc.y})
+			output = append(output, Pair[int]{line, col - 1})
 		}
 		if down == VerticalPipe || down == BottomRightPipe || down == BottomLeftPipe {
-			output = append(output, Pair[int]{loc.x, loc.y + 1})
+			output = append(output, Pair[int]{line + 1, col})
 		}
 	case BottomLeftPipe:
 		if up == VerticalPipe || up == TopLeftPipe || up == TopRightPipe {
-			output = append(output, Pair[int]{loc.x, loc.y - 1})
+			output = append(output, Pair[int]{line - 1, col})
 		}
 		if right == HorizontalPipe || right == BottomRightPipe || right == TopRightPipe {
-			output = append(output, Pair[int]{loc.x + 1, loc.y})
+			output = append(output, Pair[int]{line, col + 1})
 		}
 	case BottomRightPipe:
 		if left == HorizontalPipe || left == BottomLeftPipe || left == TopLeftPipe {
-			output = append(output, Pair[int]{loc.x - 1, loc.y})
+			output = append(output, Pair[int]{line, col - 1})
 		}
 		if up == VerticalPipe || up == TopLeftPipe || up == TopRightPipe {
-			output = append(output, Pair[int]{loc.x, loc.y - 1})
+			output = append(output, Pair[int]{line - 1, col})
 		}
 	}
 
@@ -257,7 +264,7 @@ func ValidDirectionsFrom(loc Pair[int], tiles [][]Tile) []Pair[int] {
 }
 
 type Pair[T any] struct {
-	x, y T
+	a, b T
 }
 
 type Stack[Elem any] struct {
