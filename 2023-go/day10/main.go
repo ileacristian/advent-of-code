@@ -14,57 +14,55 @@ const (
 	VerticalC          = "║"
 	HorizontalC        = "═"
 	GroundC            = "░"
+	VisitedC           = "▓"
 	StartC             = "█"
 )
 
 type Tile int
 
 const (
-	VerticalPipe Tile = iota - 7
+	VerticalPipe Tile = iota - 8
 	HorizontalPipe
 	BottomLeftPipe
 	BottomRightPipe
 	TopRightPipe
 	TopLeftPipe
 	Ground
+	Visited
 	Start
 )
 
-//go:embed test1.txt
-var test1 string
+////go:embed test1.txt
+// var test1 string
 
-//go:embed test2.txt
-var test2 string
+////go:embed test2.txt
+// var test2 string
 
-//go:embed test3.txt
-var test3 string
+////go:embed test3.txt
+// var test3 string
 
-//go:embed test4.txt
-var test4 string
+////go:embed test4.txt
+// var test4 string
 
-//go:embed test5.txt
-var test5 string
+////go:embed test5.txt
+// var test5 string
+
+//go:embed test6.txt
+var test6 string
 
 //go:embed day10.txt
 var day10 string
 
 func main() {
-	// PrettyPrint(ParseInput(test1))
-	// fmt.Println("")
-	// PrettyPrint(ParseInput(test2))
-	// fmt.Println("")
-	// PrettyPrint(ParseInput(test3))
-	// fmt.Println("")
-	// PrettyPrint(ParseInput(test4))
-	// fmt.Println("")
-	// PrettyPrint(ParseInput(test5))
-	pipes := ParseInput(day10)
 
-	// PrettyPrint(pipes)
+	pipes := ParseInput(test6)
+
+	PrettyPrint(pipes)
 
 	fmt.Println()
 
-	fmt.Println(FillAndGetMaxDistance(pipes))
+	// fmt.Println(FirstPart(pipes))
+	fmt.Println(SecondPart(pipes))
 }
 
 func ParseInput(surfaceMapString string) [][]Tile {
@@ -109,6 +107,7 @@ func TileToPrettyChar(t Tile) string {
 		BottomRightPipe: BottomRightCornerC,
 		Start:           StartC,
 		Ground:          GroundC,
+		Visited:         VisitedC,
 	}
 
 	return tileCharMap[t]
@@ -137,7 +136,7 @@ func PrettyPrint(tiles [][]Tile) {
 	}
 }
 
-func FillAndGetMaxDistance(tiles [][]Tile) int {
+func FirstPart(tiles [][]Tile) int {
 	var start = FindStart(tiles)
 
 	distances := make([][]Tile, len(tiles))
@@ -155,7 +154,7 @@ func FillAndGetMaxDistance(tiles [][]Tile) int {
 	for !queue.empty() {
 		currentLocation = queue.pop()
 		newDirections := ValidDirectionsFrom(currentLocation, tiles)
-		FillNewDirections(int(distances[currentLocation.a][currentLocation.b]+1), distances, newDirections)
+		FillNewDirections(int(distances[currentLocation.a][currentLocation.b]+1), distances, newDirections...)
 		tiles[currentLocation.a][currentLocation.b] = Ground
 		queue.push(newDirections...)
 	}
@@ -163,6 +162,33 @@ func FillAndGetMaxDistance(tiles [][]Tile) int {
 	// PrettyPrint(distances)
 
 	return int(distances[currentLocation.a][currentLocation.b])
+}
+
+func SecondPart(tiles [][]Tile) int {
+	var start = FindStart(tiles)
+
+	loop := make([][]Tile, len(tiles))
+	for i := range tiles {
+		loop[i] = make([]Tile, len(tiles[i]))
+	}
+
+	var queue Queue[Pair[int]]
+	var currentLocation = start
+	queue.push(currentLocation)
+
+	for !queue.empty() {
+		currentLocation = queue.pop()
+		newDirections := ValidDirectionsFrom(currentLocation, tiles)
+		for _, newDirection := range newDirections {
+			FillNewDirections(int(tiles[newDirection.a][newDirection.b]), loop, newDirection)
+		}
+		tiles[currentLocation.a][currentLocation.b] = Ground
+		queue.push(newDirections...)
+	}
+
+	PrettyPrint(loop)
+
+	return 0
 }
 
 func FindStart(tiles [][]Tile) (start Pair[int]) {
@@ -176,7 +202,7 @@ func FindStart(tiles [][]Tile) (start Pair[int]) {
 	return
 }
 
-func FillNewDirections(value int, tiles [][]Tile, newDirections []Pair[int]) {
+func FillNewDirections(value int, tiles [][]Tile, newDirections ...Pair[int]) {
 	for _, newDir := range newDirections {
 		tiles[newDir.a][newDir.b] = Tile(value)
 	}
